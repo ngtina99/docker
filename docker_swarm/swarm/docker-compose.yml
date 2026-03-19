@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  web:
+    image: fsattila/python-app:latest
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+
+  redis-server:
+    image: redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - webnet
+
+networks:
+  webnet:
