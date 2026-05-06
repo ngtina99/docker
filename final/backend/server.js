@@ -8,7 +8,12 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URL = process.env.MONGO_URL || "mongodb://mongo-service:27017/notesdb";
+const MONGO_HOST = process.env.MONGO_HOST || "mongo-service";
+const MONGO_DATABASE = process.env.MONGO_DATABASE || "notesdb";
+const MONGO_USERNAME = process.env.MONGO_USERNAME || "admin";
+const MONGO_PASSWORD = process.env.MONGO_PASSWORD || "password123";
+
+const MONGO_URL = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:27017/${MONGO_DATABASE}?authSource=admin`;
 
 mongoose
   .connect(MONGO_URL)
