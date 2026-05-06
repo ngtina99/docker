@@ -1,52 +1,106 @@
+# Kubernetes API version for Deployments
 apiVersion: apps/v1
+
+# Type of Kubernetes resource
+# Deployment manages pods automatically
 kind: Deployment
+
 metadata:
+  # Name of this deployment
   name: backend-deployment
+
 spec:
+  # Run 2 backend pods (2 copies of the app)
   replicas: 2
+
+  # Deployment looks for pods with this label
   selector:
     matchLabels:
       app: backend
+
+  # Template for creating pods
   template:
     metadata:
+      # Labels attached to the pods
       labels:
         app: backend
+
     spec:
       containers:
+        # Container name inside the pod
         - name: backend
+
+          # Docker image to run
           image: notes-backend:1.0
+
+          # Do not pull image from Docker Hub
+          # Use local Minikube Docker image
           imagePullPolicy: Never
+
           ports:
+            # Backend app listens on port 5000
             - containerPort: 5000
+
           env:
+            # Environment variable: MONGO_HOST
+            # Reads value from ConfigMap
             - name: MONGO_HOST
               valueFrom:
                 configMapKeyRef:
+                  # ConfigMap name
                   name: app-config
+
+                  # Key inside ConfigMap
                   key: MONGO_HOST
+
+            # Environment variable: MONGO_DATABASE
             - name: MONGO_DATABASE
               valueFrom:
                 configMapKeyRef:
                   name: app-config
                   key: MONGO_DATABASE
+
+            # Environment variable: MONGO_USERNAME
+            # Reads value from Kubernetes Secret
             - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:
+                  # Secret name
                   name: mongo-secret
+
+                  # Key inside secret
                   key: MONGO_USERNAME
+
+            # Environment variable: MONGO_PASSWORD
             - name: MONGO_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
                   key: MONGO_PASSWORD
+
 ---
+
+# Second Kubernetes object starts here
+
+# Standard API version for Services
 apiVersion: v1
+
+# Service exposes pods internally or externally
 kind: Service
+
 metadata:
+  # Service name
   name: backend-service
+
 spec:
+  # Service sends traffic to pods
+  # with label app=backend
   selector:
     app: backend
+
   ports:
+    # Service port
     - port: 5000
+
+      # Port inside the container/pod
       targetPort: 5000

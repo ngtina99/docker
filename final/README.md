@@ -7,17 +7,38 @@ The project demonstrates:
 - Kubernetes Deployments and Services
 - MongoDB database integration
 - ConfigMaps and Secrets
-- Ingress configuration
 - Internal communication between services inside a Kubernetes cluster
 
----
+# How the Application Works
+
+1. User opens the frontend in the browser
+2. The browser accesses the frontend through the frontend-service.
+3. Frontend communicates with backend-service
+4. Backend stores and retrieves notes from MongoDB
+5. MongoDB runs inside the Kubernetes cluster
+
+# ConfigMap
+
+The ConfigMap stores non-sensitive configuration:
+
+```text
+MONGO_HOST
+MONGO_DATABASE
+```
+
+# Secret
+
+The Secret stores sensitive information:
+
+```text
+MONGO_USERNAME
+MONGO_PASSWORD
+```
 
 # Project Architecture
 
 ```text
 Browser
-   ↓
-Ingress (notes.local)
    ↓
 Frontend Service
    ↓
@@ -39,9 +60,6 @@ MongoDB Pod
 - Docker
 - Kubernetes
 - Minikube
-- Nginx Ingress Controller
-
----
 
 # Kubernetes Resources Used
 
@@ -51,29 +69,20 @@ MongoDB Pod
 | Service | Internal networking between components |
 | ConfigMap | Stores non-sensitive configuration |
 | Secret | Stores database credentials |
-| Ingress | External access through browser |
-
----
 
 # Start Minikube
+
+- Minikube is a tool that runs Kubernetes locally on your computer.
+- Normally Kubernetes runs on cloud servers.
+- Minikube creates a small local Kubernetes cluster for development and learning.
 
 ```bash
 minikube start
 ```
 
-Enable Ingress Controller:
-
-```bash
-minikube addons enable ingress
-```
-
----
-
 # Build Docker Images
 
 Use Minikube Docker environment.
-
-## macOS/Linux
 
 ```bash
 eval $(minikube docker-env)
@@ -86,8 +95,8 @@ docker build -t notes-backend:1.0 ./backend
 docker build -t notes-frontend:1.0 ./frontend
 ```
 
----
 
+This is the main Kubernetes step. It creates everything from your YAML files:
 # Deploy to Kubernetes
 
 Apply all Kubernetes configurations:
@@ -96,7 +105,10 @@ Apply all Kubernetes configurations:
 kubectl apply -f k8s/
 ```
 
----
+To delete the running Kubernetes pods and resources from your project:
+```bash
+kubectl delete -f k8s/
+```
 
 # Verify Deployment
 
@@ -120,101 +132,29 @@ Check services:
 kubectl get svc
 ```
 
-Check ingress:
-
-```bash
-kubectl get ingress
-```
-
-Expected output:
-
-```text
-notes-ingress   notes.local
-```
-
----
-
-# Configure Local Domain
-
-Get Minikube IP:
-
-```bash
-minikube ip
-```
-
-Example:
-
-```text
-192.168.49.2
-```
-
-Edit hosts file.
-
-## macOS/Linux
-
-```bash
-sudo nano /etc/hosts
-```
-
-## Windows
-
-Edit:
-
-```text
-C:\Windows\System32\drivers\etc\hosts
-```
-
-Add:
-
-```text
-192.168.49.2 notes.local
-```
-
-Save the file.
-
----
-
 # Access the Application
 
-Open browser:
+Visual dashboard (BEST OPTION)
 
-```text
-http://notes.local
+Kubernetes has a GUI dashboard.
+
+Run:
+```bash
+minikube dashboard
 ```
 
----
+Run:
 
-# How the Application Works
-
-1. User opens the frontend in the browser
-2. Ingress routes traffic to frontend-service
-3. Frontend communicates with backend-service
-4. Backend stores and retrieves notes from MongoDB
-5. MongoDB runs inside the Kubernetes cluster
-
----
-
-# ConfigMap
-
-The ConfigMap stores non-sensitive configuration:
-
-```text
-MONGO_HOST
-MONGO_DATABASE
+```bash
+minikube service frontend-service
 ```
 
----
-
-# Secret
-
-The Secret stores sensitive information:
-
-```text
-MONGO_USERNAME
-MONGO_PASSWORD
+Rebuild:
+```bash
+eval $(minikube docker-env)      
+docker build -t notes-frontend:1.0 ./frontend
+kubectl rollout restart deployment frontend-deployment
 ```
-
----
 
 # Scaling Example
 
@@ -229,8 +169,6 @@ Check pods again:
 ```bash
 kubectl get pods
 ```
-
----
 
 # Useful Kubernetes Commands
 
@@ -252,22 +190,55 @@ View logs:
 kubectl logs <pod-name>
 ```
 
-Delete all resources:
-
 ```bash
-kubectl delete -f k8s/
+kubectl logs -l app=backend
 ```
 
----
+```bash
+kubectl logs -l app=mongo
+```
 
-# Demonstration Flow
+```bash
+kubectl logs -l app=frontend
+```
 
-1. Start Minikube
-2. Enable ingress
-3. Build Docker images
-4. Deploy Kubernetes resources
-5. Show running pods and services
-6. Open application in browser
-7. Create notes
-8. Explain architecture and YAML files
-9. Demonstrate scaling
+# SECRET and CONFIGMAP
+```bash
+kubectl get pods
+```
+
+```bash
+kubectl exec -it backend-deployment-6d487d97bd-pj9ph -- sh
+```
+
+These values came from the Kubernetes ConfigMap.
+
+Your backend connects using:
+
+mongo-service
+
+not a hardcoded IP.
+
+Pods communicate using Kubernetes service names.
+
+```bash
+kubectl exec -it mongo-deployment-7c7cb8f79-bd82k -- sh
+```
+
+login:
+```bash
+mongosh -u admin -p password123
+```
+
+open your app database:
+```bash
+use notesdb
+```
+
+```bash
+show collections
+```
+
+```bash
+db.notes.find()
+```

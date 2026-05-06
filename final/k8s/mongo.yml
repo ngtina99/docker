@@ -1,28 +1,67 @@
+# MongoDB Deployment and Service
+#
+# This file tells Kubernetes to:
+# - run a MongoDB container
+# - expose MongoDB internally inside the cluster
+# - provide database credentials using Kubernetes Secrets
+#
+# The Deployment manages the MongoDB pod.
+# The Service allows other pods (backend) to connect to MongoDB
+# using the hostname: mongo-service
+
+# Kubernetes API version for Deployments
 apiVersion: apps/v1
+
+# Deployment resource
+# Automatically manages MongoDB pods
 kind: Deployment
+
 metadata:
+  # Name of the Deployment
   name: mongo-deployment
+
 spec:
+  # Number of MongoDB pods
   replicas: 1
+
+  # Deployment manages pods with this label
   selector:
     matchLabels:
       app: mongo
+
+  # Pod template
   template:
     metadata:
+      # Labels attached to MongoDB pod
       labels:
         app: mongo
+
     spec:
       containers:
+        # Container name
         - name: mongo
+
+          # Official MongoDB Docker image
           image: mongo:latest
+
           ports:
+            # MongoDB listens on port 27017
             - containerPort: 27017
+
           env:
+            # MongoDB root username
+            # Value comes from Kubernetes Secret
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
                 secretKeyRef:
+                  # Secret name
                   name: mongo-secret
+
+                  # Secret key
                   key: MONGO_USERNAME
+
+            # MongoDB root password
+            # Value comes from Kubernetes Secret
             - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -30,13 +69,28 @@ spec:
                   key: MONGO_PASSWORD
 
 ---
+
+# Standard Kubernetes API version
 apiVersion: v1
+
+# Service resource
+# Allows internal communication to MongoDB pod
 kind: Service
+
 metadata:
+  # Name of the MongoDB service
+  # Backend connects using this hostname
   name: mongo-service
+
 spec:
+  # Service forwards traffic to pods
+  # with label app=mongo
   selector:
     app: mongo
+
   ports:
+    # MongoDB service port
     - port: 27017
+
+      # Port inside MongoDB container
       targetPort: 27017

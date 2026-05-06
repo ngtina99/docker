@@ -1,7 +1,31 @@
+# ConfigMap is used to store application configuration separately
+# from the application code.
+#
+# In this project, the ConfigMap stores:
+# - MongoDB service hostname
+# - MongoDB database name
+#
+# The backend container reads these values as environment variables, keep deployment cleaner and easier to manage
+
+# Kubernetes API version
 apiVersion: v1
+
+# Type of Kubernetes resource
+# ConfigMap stores configuration values
 kind: ConfigMap
+
 metadata:
+  # Name of this ConfigMap
+  # Other Kubernetes files use this name to access it
   name: app-config
+
+# Configuration key-value pairs
 data:
+
+  # Hostname of the MongoDB service inside Kubernetes
+  # Backend uses this to connect to MongoDB
   MONGO_HOST: mongo-service
+
+  # Name of the MongoDB database
+  # Backend will use/create this database
   MONGO_DATABASE: notesdb

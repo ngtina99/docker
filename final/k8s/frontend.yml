@@ -1,33 +1,85 @@
+# Frontend Deployment and Service
+#
+# This file tells Kubernetes to:
+# - run the React frontend container
+# - expose it so users can access it in the browser
+#
+# The Deployment manages the frontend pods.
+# The Service provides networking access to those pods.
+#
+# NodePort exposes the frontend outside the cluster
+# using a port on the Minikube machine.
+
+# Kubernetes Deployment API version
 apiVersion: apps/v1
+
+# Resource type
+# Deployment manages pods automatically
 kind: Deployment
+
 metadata:
+  # Name of the deployment
   name: frontend-deployment
+
 spec:
+  # Number of frontend pods to run
   replicas: 1
+
+  # Deployment matches pods with this label
   selector:
     matchLabels:
       app: frontend
+
+  # Pod template
   template:
     metadata:
+      # Labels attached to the pod
       labels:
         app: frontend
+
     spec:
       containers:
+        # Container name
         - name: frontend
+
+          # Docker image used for the frontend
           image: notes-frontend:1.0
+
+          # Use local Minikube Docker image
           imagePullPolicy: Never
+
           ports:
+            # Frontend container listens on port 80
             - containerPort: 80
+
 ---
+
+# Standard Kubernetes API version for Services
 apiVersion: v1
+
+# Service resource
+# Service exposes frontend pods to the network
 kind: Service
+
 metadata:
+  # Name of the service
   name: frontend-service
+
 spec:
+  # NodePort exposes service outside Kubernetes
   type: NodePort
+
+  # Service sends traffic to pods with this label
   selector:
     app: frontend
+
   ports:
+    # Service port inside cluster
     - port: 80
+
+      # Port inside frontend container
       targetPort: 80
+
+      # External port exposed by Minikube/node
+      # Browser accesses frontend using this port
       nodePort: 30080
