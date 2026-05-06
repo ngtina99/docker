@@ -51,6 +51,7 @@ Backend Pod (Node.js API)
 Mongo Service
    ↓
 MongoDB Pod
+```
 
 # Technologies Used
 
