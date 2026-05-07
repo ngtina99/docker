@@ -204,6 +204,10 @@ kubectl logs -l app=mongo
 kubectl logs -l app=frontend
 ```
 
+```bash
+kubectl get endpoints
+```
+
 # SECRET and CONFIGMAP
 ```bash
 kubectl get pods
