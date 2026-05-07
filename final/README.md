@@ -131,6 +131,7 @@ Check services:
 
 ```bash
 kubectl get svc
+kubectl get services
 ```
 
 # Access the Application
